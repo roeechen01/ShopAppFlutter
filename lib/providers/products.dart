@@ -45,7 +45,13 @@ class Products with ChangeNotifier {
       items.firstWhere((element) => element.id == id);
 
   void addProduct(Product product) {
-    _items.add(product);
+    Product productToAdd = Product(
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        imageUrl: product.imageUrl,
+        id: DateTime.now().toString());
+    _items.add(productToAdd);
     notifyListeners();
   }
 }
