@@ -15,27 +15,49 @@ class _EditProductsScreenState extends State<EditProductsScreen> {
   final descriptionFocusNode = FocusNode();
   final imageUrlFocusNode = FocusNode();
   final imageUrlController = TextEditingController();
-
   final _form = GlobalKey<FormState>();
   Product editedProduct =
       Product(id: null, description: '', imageUrl: '', title: '', price: 0);
+  final initValues = {
+    'title': '',
+    'price': '0',
+    'description': '',
+    'imageUrl': '',
+  };
+  bool isInit = true;
 
   @override
   void initState() {
-    imageUrlFocusNode.addListener(tentacion);
+    imageUrlFocusNode.addListener(updateImage);
     super.initState();
   }
 
   @override
+  void didChangeDependencies() {
+    if (isInit) {
+      String id = ModalRoute.of(context).settings.arguments as String;
+      if (id != null) {
+        editedProduct = Provider.of<Products>(context).findById(id);
+        initValues['title'] = editedProduct.title;
+        initValues['price'] = editedProduct.price.toString();
+        initValues['description'] = editedProduct.description;
+        imageUrlController.text = editedProduct.imageUrl;
+      }
+    }
+    isInit = false;
+    super.didChangeDependencies();
+  }
+
+  @override
   void dispose() {
-    imageUrlFocusNode.removeListener(tentacion);
+    imageUrlFocusNode.removeListener(updateImage);
     priceFocusNode.dispose();
     descriptionFocusNode.dispose();
     imageUrlFocusNode.dispose();
     super.dispose();
   }
 
-  void tentacion() {
+  void updateImage() {
     if (!imageUrlController.text.startsWith('http') &&
         !imageUrlController.text.startsWith('https')) return;
     setState(() {});
@@ -45,7 +67,12 @@ class _EditProductsScreenState extends State<EditProductsScreen> {
     final validation = _form.currentState.validate();
     if (validation) {
       _form.currentState.save();
-      Provider.of<Products>(context, listen: false).addProduct(editedProduct);
+      if (editedProduct.id == null) {
+        Provider.of<Products>(context, listen: false).addProduct(editedProduct);
+      } else {
+        Provider.of<Products>(context, listen: false)
+            .updateProduct(editedProduct.id, editedProduct);
+      }
       Navigator.of(context).pop();
     }
   }
@@ -62,6 +89,7 @@ class _EditProductsScreenState extends State<EditProductsScreen> {
             key: _form,
             child: ListView(children: [
               TextFormField(
+                initialValue: initValues['title'],
                 decoration: InputDecoration(labelText: 'Title'),
                 textInputAction: TextInputAction.next,
                 onFieldSubmitted: (_) =>
@@ -71,7 +99,8 @@ class _EditProductsScreenState extends State<EditProductsScreen> {
                     description: editedProduct.description,
                     price: editedProduct.price,
                     imageUrl: editedProduct.imageUrl,
-                    id: null),
+                    isFavorite: editedProduct.isFavorite,
+                    id: editedProduct.id),
                 validator: (value) {
                   if (value.isEmpty)
                     return 'Please enter input';
@@ -80,6 +109,7 @@ class _EditProductsScreenState extends State<EditProductsScreen> {
                 },
               ),
               TextFormField(
+                initialValue: initValues['price'],
                 decoration: InputDecoration(labelText: 'Price'),
                 textInputAction: TextInputAction.next,
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
@@ -91,7 +121,8 @@ class _EditProductsScreenState extends State<EditProductsScreen> {
                     description: editedProduct.description,
                     price: double.parse(value),
                     imageUrl: editedProduct.imageUrl,
-                    id: null),
+                    isFavorite: editedProduct.isFavorite,
+                    id: editedProduct.id),
                 validator: (value) {
                   if (value.isEmpty) return 'Please enter input';
                   if (double.tryParse(value) == null)
@@ -102,6 +133,7 @@ class _EditProductsScreenState extends State<EditProductsScreen> {
                 },
               ),
               TextFormField(
+                initialValue: initValues['description'],
                 decoration: InputDecoration(labelText: 'Description'),
                 maxLines: 3,
                 keyboardType: TextInputType.multiline,
@@ -111,7 +143,8 @@ class _EditProductsScreenState extends State<EditProductsScreen> {
                     description: value,
                     price: editedProduct.price,
                     imageUrl: editedProduct.imageUrl,
-                    id: null),
+                    isFavorite: editedProduct.isFavorite,
+                    id: editedProduct.id),
                 validator: (value) {
                   if (value.length <= 10)
                     return 'Please enter text longer than 10 character';
@@ -152,7 +185,8 @@ class _EditProductsScreenState extends State<EditProductsScreen> {
                         description: editedProduct.description,
                         price: editedProduct.price,
                         imageUrl: value,
-                        id: null),
+                        isFavorite: editedProduct.isFavorite,
+                        id: editedProduct.id),
                     onFieldSubmitted: (_) => save(),
                     validator: (value) {
                       if (!value.startsWith('http') &&

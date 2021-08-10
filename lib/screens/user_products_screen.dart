@@ -30,6 +30,7 @@ class UserProductsScreen extends StatelessWidget {
                 itemBuilder: (context, i) => UserProductItem(
                       title: productsData.items[i].title,
                       imageUrl: productsData.items[i].imageUrl,
+                      id: productsData.items[i].id,
                     ))));
   }
 }
