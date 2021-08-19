@@ -10,6 +10,7 @@ class UserProductItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scaffold = Scaffold.of(context);
     return ListTile(
         leading: CircleAvatar(
           backgroundImage: NetworkImage(imageUrl),
@@ -27,32 +28,18 @@ class UserProductItem extends StatelessWidget {
                   color: Theme.of(context).primaryColor),
               IconButton(
                   icon: Icon(Icons.delete),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                                title: Text(
-                                    'Are you sure you want to delete item?'),
-                                actions: [
-                                  FlatButton(
-                                      onPressed: () {
-                                        Provider.of<Products>(context)
-                                            .removeProduct(id);
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text(
-                                        'Yes',
-                                        style: TextStyle(
-                                          color: Theme.of(context).errorColor,
-                                        ),
-                                      )),
-                                  FlatButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text('No'),
-                                  )
-                                ]));
+                  onPressed: () async {
+                    try {
+                      await Provider.of<Products>(context, listen: false)
+                          .removeProduct(id);
+                    } catch (error) {
+                      scaffold.showSnackBar(SnackBar(
+                        content: Text(
+                          'Deleting failed!',
+                          textAlign: TextAlign.center,
+                        ),
+                      ));
+                    }
                   },
                   color: Theme.of(context).errorColor)
             ])));

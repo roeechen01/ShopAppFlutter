@@ -6,6 +6,7 @@ import 'package:shop_app/screens/product_detail_screen.dart';
 
 class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
+    final scaffold = Scaffold.of(context);
     final product = Provider.of<Product>(context, listen: false);
     final cart = Provider.of<Cart>(context, listen: false);
     return ClipRRect(
@@ -32,8 +33,16 @@ class ProductItem extends StatelessWidget {
                       : Icons.favorite_border,
                   color: Theme.of(context).accentColor,
                 ),
-                onPressed: () {
-                  dynamicProduct.toggleFavirote();
+                onPressed: () async {
+                  try {
+                    dynamicProduct.toggleFavirote();
+                  } catch (error) {
+                    scaffold.showSnackBar(SnackBar(
+                        content: Text(
+                      'Could not update favorite status',
+                      textAlign: TextAlign.center,
+                    )));
+                  }
                 },
               ),
             ),
