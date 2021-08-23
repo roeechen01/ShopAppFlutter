@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shop_app/providers/auth.dart';
 import 'package:shop_app/providers/cart.dart';
 import 'package:shop_app/providers/orders.dart';
 import 'package:shop_app/providers/products.dart';
+import 'package:shop_app/screens/auth_screen.dart';
 import 'package:shop_app/screens/cart_screen.dart';
 import 'package:shop_app/screens/edit_products_screen.dart';
 import 'package:shop_app/screens/orders_screen.dart';
@@ -20,25 +22,30 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: Products()),
+        ChangeNotifierProvider.value(value: Auth()),
+        ChangeNotifierProxyProvider<Auth, Products>(
+            update: (ctx, auth, previous) =>
+                Products(previous == null ? [] : previous.items, auth.token)),
         ChangeNotifierProvider.value(value: Cart()),
         ChangeNotifierProvider.value(value: Orders()),
       ],
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-            accentColor: Colors.deepOrange,
-            primarySwatch: Colors.purple,
-            fontFamily: 'Lato'),
-        home: ProductsOverviewScreen(),
-        debugShowCheckedModeBanner: false,
-        routes: {
-          ProductDetailScreen.routeName: (context) => ProductDetailScreen(),
-          CartScreen.routeName: (context) => CartScreen(),
-          OrdersScreen.routeName: (context) => OrdersScreen(),
-          UserProductsScreen.routeName: (context) => UserProductsScreen(),
-          EditProductsScreen.routeName: (context) => EditProductsScreen(),
-        },
+      child: Consumer<Auth>(
+        builder: (context, auth, child) => MaterialApp(
+          title: 'Flutter Demo',
+          theme: ThemeData(
+              accentColor: Colors.deepOrange,
+              primarySwatch: Colors.purple,
+              fontFamily: 'Lato'),
+          home: auth.isAuth ? ProductsOverviewScreen() : AuthScreen(),
+          debugShowCheckedModeBanner: false,
+          routes: {
+            ProductDetailScreen.routeName: (context) => ProductDetailScreen(),
+            CartScreen.routeName: (context) => CartScreen(),
+            OrdersScreen.routeName: (context) => OrdersScreen(),
+            UserProductsScreen.routeName: (context) => UserProductsScreen(),
+            EditProductsScreen.routeName: (context) => EditProductsScreen(),
+          },
+        ),
       ),
     );
   }

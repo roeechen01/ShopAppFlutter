@@ -5,7 +5,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class Products with ChangeNotifier {
+  String token;
+  Products(this._items, this.token);
+
   List<Product> _items = [
+    /*
     Product(
       id: 'p1',
       title: 'Red Shirt',
@@ -37,7 +41,7 @@ class Products with ChangeNotifier {
       price: 49.99,
       imageUrl:
           'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
-    ),
+    ),*/
   ];
   List<Product> get items => [..._items];
 
@@ -48,8 +52,8 @@ class Products with ChangeNotifier {
       items.firstWhere((element) => element.id == id);
 
   Future<void> fetchAndSetProducts() async {
-    const url =
-        'https://shop-app-1e674-default-rtdb.firebaseio.com/Products.json';
+    final url =
+        'https://shop-app-1e674-default-rtdb.firebaseio.com/Products.json?auth=$token';
     try {
       final response = await http.get(url);
       final data = json.decode(response.body) as Map<String, dynamic>;
