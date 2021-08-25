@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class Products with ChangeNotifier {
-  String token;
-  Products(this._items, this.token);
+  String token, userId;
+  Products(this._items, this.token, this.userId);
 
   List<Product> _items = [
     /*
@@ -43,6 +43,7 @@ class Products with ChangeNotifier {
           'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
     ),*/
   ];
+
   List<Product> get items => [..._items];
 
   List<Product> get favorites =>
@@ -51,22 +52,31 @@ class Products with ChangeNotifier {
   Product findById(String id) =>
       items.firstWhere((element) => element.id == id);
 
-  Future<void> fetchAndSetProducts() async {
-    final url =
+  Future<void> fetchAndSetProducts([bool filterUserCreated = false]) async {
+    var url =
+        //'https://shop-app-1e674-default-rtdb.firebaseio.com/Products.json?auth=$token';
         'https://shop-app-1e674-default-rtdb.firebaseio.com/Products.json?auth=$token';
+    final response = await http.get(url);
+    //print('!!!!!${json.decode(response.body)}!!!!!');
     try {
-      final response = await http.get(url);
       final data = json.decode(response.body) as Map<String, dynamic>;
       if (data == null) return;
+      url =
+          'https://shop-app-1e674-default-rtdb.firebaseio.com/userFavorites/$userId.json?auth=$token';
+      final favoriteResponse = await http.get(url);
+      final favoriteData = json.decode(favoriteResponse.body);
+
       final List<Product> loadedProducts = [];
       data.forEach((id, mapValues) {
-        loadedProducts.add(Product(
-            description: mapValues['description'],
-            id: id,
-            imageUrl: mapValues['imageUrl'],
-            isFavorite: mapValues['isFavorite'],
-            price: mapValues['price'],
-            title: mapValues['title']));
+        if (!filterUserCreated || userId == mapValues['creatorId'])
+          loadedProducts.add(Product(
+              description: mapValues['description'],
+              id: id,
+              imageUrl: mapValues['imageUrl'],
+              isFavorite:
+                  favoriteData == null ? false : favoriteData[id] ?? false,
+              price: mapValues['price'],
+              title: mapValues['title']));
       });
       _items = loadedProducts;
       notifyListeners();
@@ -76,8 +86,8 @@ class Products with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
-    const url =
-        'https://shop-app-1e674-default-rtdb.firebaseio.com/Products.json';
+    final url =
+        'https://shop-app-1e674-default-rtdb.firebaseio.com/Products.json?auth=$token';
     try {
       final response = await http.post(url,
           body: json.encode({
@@ -85,7 +95,7 @@ class Products with ChangeNotifier {
             'description': product.description,
             'price': product.price,
             'imageUrl': product.imageUrl,
-            'isFavorite': product.isFavorite
+            'creatorId': userId,
           }));
 
       Product productToAdd = Product(
@@ -105,7 +115,7 @@ class Products with ChangeNotifier {
     int productIndex = _items.indexWhere((element) => element.id == id);
     if (productIndex >= 0) {
       final url =
-          'https://shop-app-1e674-default-rtdb.firebaseio.com/Products/$id.json';
+          'https://shop-app-1e674-default-rtdb.firebaseio.com/Products/$id.json?auth=$token';
       await http.patch(url,
           body: json.encode({
             'title': newProduct.title,
@@ -121,7 +131,7 @@ class Products with ChangeNotifier {
 
   Future<void> removeProduct(String id) async {
     final url =
-        'https://shop-app-1e674-default-rtdb.firebaseio.com/Products/$id.json';
+        'https://shop-app-1e674-default-rtdb.firebaseio.com/Products/$id.json?auth=$token';
     final index = _items.indexWhere((product) => product.id == id);
     var saved = _items[index];
     _items.removeAt(index);

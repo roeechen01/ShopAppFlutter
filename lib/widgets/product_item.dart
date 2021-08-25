@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/providers/auth.dart';
 import 'package:shop_app/providers/cart.dart';
 import 'package:shop_app/providers/product.dart';
 import 'package:shop_app/screens/product_detail_screen.dart';
@@ -35,7 +36,9 @@ class ProductItem extends StatelessWidget {
                 ),
                 onPressed: () async {
                   try {
-                    dynamicProduct.toggleFavirote();
+                    final _authData = Provider.of<Auth>(context, listen: false);
+                    dynamicProduct.toggleFavirote(
+                        _authData.token, _authData.userId);
                   } catch (error) {
                     scaffold.showSnackBar(SnackBar(
                         content: Text(

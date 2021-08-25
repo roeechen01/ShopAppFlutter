@@ -10,6 +10,7 @@ import 'package:shop_app/screens/orders_screen.dart';
 import 'package:shop_app/screens/product_detail_screen.dart';
 import 'package:shop_app/screens/products_overview_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/screens/splash_screen.dart';
 import 'package:shop_app/screens/user_products_screen.dart';
 
 void main() {
@@ -24,10 +25,14 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(value: Auth()),
         ChangeNotifierProxyProvider<Auth, Products>(
-            update: (ctx, auth, previous) =>
-                Products(previous == null ? [] : previous.items, auth.token)),
+            update: (ctx, auth, previous) => Products(
+                previous == null ? [] : previous.items.toList(),
+                auth.token,
+                auth.userId)),
         ChangeNotifierProvider.value(value: Cart()),
-        ChangeNotifierProvider.value(value: Orders()),
+        ChangeNotifierProxyProvider<Auth, Orders>(
+            update: (ctx, auth, previous) => Orders(auth.token, auth.userId,
+                previous == null ? [] : previous.orders.toList())),
       ],
       child: Consumer<Auth>(
         builder: (context, auth, child) => MaterialApp(
@@ -36,7 +41,14 @@ class MyApp extends StatelessWidget {
               accentColor: Colors.deepOrange,
               primarySwatch: Colors.purple,
               fontFamily: 'Lato'),
-          home: auth.isAuth ? ProductsOverviewScreen() : AuthScreen(),
+          home: auth.isAuth
+              ? ProductsOverviewScreen()
+              : FutureBuilder(
+                  future: auth.tryAutoLogin(),
+                  builder: (context, snapshot) =>
+                      snapshot.connectionState == ConnectionState.waiting
+                          ? SplashScreen()
+                          : AuthScreen()),
           debugShowCheckedModeBanner: false,
           routes: {
             ProductDetailScreen.routeName: (context) => ProductDetailScreen(),

@@ -22,15 +22,14 @@ class Product with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> toggleFavirote() async {
+  Future<void> toggleFavirote(String token, String userId) async {
     bool oldStatus = this.isFavorite;
     final url =
-        'https://shop-app-1e674-default-rtdb.firebaseio.com/Products/$id';
+        'https://shop-app-1e674-default-rtdb.firebaseio.com/userFavorites/$userId/$id.json?auth=$token';
     this.isFavorite = !this.isFavorite;
     notifyListeners();
     try {
-      final resposne = await http.patch(url,
-          body: json.encode({'isFavorite': this.isFavorite}));
+      final resposne = await http.put(url, body: json.encode(this.isFavorite));
       if (resposne.statusCode >= 400) {
         _setFavStatus(oldStatus);
         throw HttpException('Favorite status update failed!');
