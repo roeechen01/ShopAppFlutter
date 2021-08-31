@@ -13,16 +13,21 @@ class Auth extends ChangeNotifier {
   Timer _logoutTimer;
 
   bool get isAuth {
+    print('isAuth: $_token');
     return _token != null;
   }
 
   String get token {
+    print('aaaaaaaa$_expiryDate');
     if (_expiryDate != null &&
         _expiryDate.isAfter(DateTime.now()) &&
-        _token != null)
+        _token != null) {
+      print('success');
       return _token;
-    else
+    } else {
+      print('failure');
       return null;
+    }
   }
 
   String get userId {
@@ -54,8 +59,8 @@ class Auth extends ChangeNotifier {
         final prefs = await SharedPreferences.getInstance();
         final userData = json.encode({
           'token': _token,
+          'userId': _userId,
           'expiryDate': _expiryDate.toIso8601String(),
-          'userId': _userId
         });
         prefs.setString('userData', userData);
       }
@@ -69,13 +74,14 @@ class Auth extends ChangeNotifier {
     if (!prefs.containsKey('userData')) return false;
     final extractedData =
         json.decode(prefs.getString('userData')) as Map<String, Object>;
-    final expiryDate = DateTime.parse(extractedData['expiryData']);
+    final expiryDate = DateTime.parse(extractedData['expiryDate']);
     if (expiryDate.isBefore(DateTime.now())) return false;
-
+    _expiryDate = expiryDate;
     _token = extractedData['token'];
     _userId = extractedData['userId'];
     _autoLogout();
     notifyListeners();
+
     return true;
   }
 
@@ -88,6 +94,7 @@ class Auth extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    print('LOGGED OUT!');
     this._userId = null;
     this._token = null;
     this._expiryDate = null;

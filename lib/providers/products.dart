@@ -56,33 +56,35 @@ class Products with ChangeNotifier {
     var url =
         //'https://shop-app-1e674-default-rtdb.firebaseio.com/Products.json?auth=$token';
         'https://shop-app-1e674-default-rtdb.firebaseio.com/Products.json?auth=$token';
+    print('TOKEN: $token');
     final response = await http.get(url);
     //print('!!!!!${json.decode(response.body)}!!!!!');
-    try {
-      final data = json.decode(response.body) as Map<String, dynamic>;
-      if (data == null) return;
-      url =
-          'https://shop-app-1e674-default-rtdb.firebaseio.com/userFavorites/$userId.json?auth=$token';
-      final favoriteResponse = await http.get(url);
-      final favoriteData = json.decode(favoriteResponse.body);
+    // try {
+    final data = json.decode(response.body) as Map<String, dynamic>;
+    if (data == null) return;
+    url =
+        'https://shop-app-1e674-default-rtdb.firebaseio.com/userFavorites/$userId.json?auth=$token';
+    final favoriteResponse = await http.get(url);
+    final favoriteData = json.decode(favoriteResponse.body);
 
-      final List<Product> loadedProducts = [];
-      data.forEach((id, mapValues) {
-        if (!filterUserCreated || userId == mapValues['creatorId'])
-          loadedProducts.add(Product(
-              description: mapValues['description'],
-              id: id,
-              imageUrl: mapValues['imageUrl'],
-              isFavorite:
-                  favoriteData == null ? false : favoriteData[id] ?? false,
-              price: mapValues['price'],
-              title: mapValues['title']));
-      });
-      _items = loadedProducts;
-      notifyListeners();
-    } catch (error) {
-      throw error;
-    }
+    print('!!!!!!!!!$data');
+    final List<Product> loadedProducts = [];
+    data.forEach((id, mapValues) {
+      if (!filterUserCreated || userId == mapValues['creatorId'])
+        loadedProducts.add(Product(
+            description: mapValues['description'].toString(),
+            id: id,
+            imageUrl: mapValues['imageUrl'].toString(),
+            isFavorite:
+                favoriteData == null ? false : favoriteData[id] ?? false,
+            price: double.parse(mapValues['price'].toString()),
+            title: mapValues['title'].toString()));
+    });
+    _items = loadedProducts;
+    notifyListeners();
+    // } catch (error) {
+    //   throw error;
+    // }
   }
 
   Future<void> addProduct(Product product) async {
