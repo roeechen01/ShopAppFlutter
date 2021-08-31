@@ -56,9 +56,7 @@ class Products with ChangeNotifier {
     var url =
         //'https://shop-app-1e674-default-rtdb.firebaseio.com/Products.json?auth=$token';
         'https://shop-app-1e674-default-rtdb.firebaseio.com/Products.json?auth=$token';
-    print('TOKEN: $token');
     final response = await http.get(url);
-    //print('!!!!!${json.decode(response.body)}!!!!!');
     // try {
     final data = json.decode(response.body) as Map<String, dynamic>;
     if (data == null) return;
@@ -67,7 +65,6 @@ class Products with ChangeNotifier {
     final favoriteResponse = await http.get(url);
     final favoriteData = json.decode(favoriteResponse.body);
 
-    print('!!!!!!!!!$data');
     final List<Product> loadedProducts = [];
     data.forEach((id, mapValues) {
       if (!filterUserCreated || userId == mapValues['creatorId'])

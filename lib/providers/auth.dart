@@ -13,21 +13,16 @@ class Auth extends ChangeNotifier {
   Timer _logoutTimer;
 
   bool get isAuth {
-    print('isAuth: $_token');
     return _token != null;
   }
 
   String get token {
-    print('aaaaaaaa$_expiryDate');
     if (_expiryDate != null &&
         _expiryDate.isAfter(DateTime.now()) &&
-        _token != null) {
-      print('success');
+        _token != null)
       return _token;
-    } else {
-      print('failure');
+    else
       return null;
-    }
   }
 
   String get userId {
@@ -46,7 +41,6 @@ class Auth extends ChangeNotifier {
             'returnSecureToken': true
           }));
       final responseData = json.decode(response.body);
-      print(responseData);
       if (responseData['error'] != null) {
         throw HttpException(responseData['error']['message']);
       } else {
@@ -94,7 +88,6 @@ class Auth extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    print('LOGGED OUT!');
     this._userId = null;
     this._token = null;
     this._expiryDate = null;

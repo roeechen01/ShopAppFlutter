@@ -40,7 +40,6 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
             PopupMenuButton(
               onSelected: (value) => setState(() {
                 _showFavorites = value == FilterOptions.ShowFavorites;
-                print(_showFavorites);
               }),
               icon: Icon(Icons.more_vert),
               itemBuilder: (context) => [
