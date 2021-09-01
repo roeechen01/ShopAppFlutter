@@ -14,9 +14,12 @@ class ProductDetailScreen extends StatelessWidget {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.network(
-              loadedProduct.imageUrl,
-              width: double.infinity,
+            Hero(
+              tag: productId,
+              child: Image.network(
+                loadedProduct.imageUrl,
+                width: double.infinity,
+              ),
             ),
             SizedBox(
               height: 15,
